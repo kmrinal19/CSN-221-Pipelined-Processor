@@ -1,8 +1,8 @@
-module ID_EX_reg (branch, reg_write, mem_to_reg, mem_write, mem_read, alu_src, alu_op, nextpc ,reg_file_rd_data1,reg_file_rd_data2, sgn_ext_imm, inst_imm_field, nextpc_out, reg_file_out_data1, reg_file_out_data2, sgn_ext_imm_out, reg_write_out_id_ex, mem_to_reg_out_id_ex, mem_write_out_id_ex, mem_read_out_id_ex, branch_out_id_ex, alu_src_out_id_ex, alu_op_out_id_ex, clk, reset, reg_dst, reg_dst_id_ex, inst_read_reg_addr2_out_id, rd_out_id, inst_read_reg_addr2_out_id_ex, rd_out_id_ex, jump_in_id);
+module ID_EX_reg (branch, reg_write, mem_to_reg, mem_write, mem_read, alu_src, alu_op, nextpc ,reg_file_rd_data1,reg_file_rd_data2, sgn_ext_imm, inst_imm_field, nextpc_out, reg_file_out_data1, reg_file_out_data2, sgn_ext_imm_out, reg_write_out_id_ex, mem_to_reg_out_id_ex, mem_write_out_id_ex, mem_read_out_id_ex, branch_out_id_ex, alu_src_out_id_ex, alu_op_out_id_ex, clk, reset, reg_dst, reg_dst_id_ex, inst_read_reg_addr2_out_id, rd_out_id, inst_read_reg_addr2_out_id_ex, rd_out_id_ex, jump_in_id, inst_read_reg_addr1_out_id, inst_read_reg_addr1_out_id_ex);
 
 
   input wire reg_write, mem_to_reg, branch, reg_dst, jump_in_id;
-  input wire [4:0] rd_out_id, inst_read_reg_addr2_out_id;
+  input wire [4:0] rd_out_id, inst_read_reg_addr2_out_id, inst_read_reg_addr1_out_id;
   input wire mem_write, mem_read;
   input wire alu_src;
   input wire [1:0] alu_op;
@@ -13,7 +13,7 @@ module ID_EX_reg (branch, reg_write, mem_to_reg, mem_write, mem_read, alu_src, a
   output reg mem_write_out_id_ex, mem_read_out_id_ex;
   output reg alu_src_out_id_ex;
   output reg [1:0] alu_op_out_id_ex;
-  output reg [4:0] rd_out_id_ex, inst_read_reg_addr2_out_id_ex;
+  output reg [4:0] rd_out_id_ex, inst_read_reg_addr2_out_id_ex, inst_read_reg_addr1_out_id_ex;
 
 
   output reg [31:0] nextpc_out ,reg_file_out_data1 ,reg_file_out_data2 ,sgn_ext_imm_out;
@@ -73,6 +73,7 @@ module ID_EX_reg (branch, reg_write, mem_to_reg, mem_write, mem_read, alu_src, a
           alu_src_out_id_ex <= alu_src;
           alu_op_out_id_ex <= alu_op;
           reg_dst_id_ex <= reg_dst;
+          inst_read_reg_addr1_out_id_ex <= inst_read_reg_addr1_out_id;
           // reg_dst_out <= reg_dst;
         end
     end

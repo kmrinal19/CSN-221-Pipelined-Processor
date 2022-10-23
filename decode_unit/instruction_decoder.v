@@ -32,6 +32,7 @@ module instruction_decoder (
     sgn_ext_imm,
     imm_sgn_ext_lft_shft,
     reg_wr_addr_wb,
+    inst_read_reg_addr1_out_id,
     inst_read_reg_addr2_out_id,
     rd_out_id,
     jump_in,
@@ -86,7 +87,7 @@ module instruction_decoder (
     input reg_write_cu; // mem_to_reg removed(Redundant mem_to_reg signal, to be included in WB stage)
     output [31:0] reg_file_rd_data1, reg_file_rd_data2, sgn_ext_imm, imm_sgn_ext_lft_shft;
     output reg [15:0] imm_field_wo_sgn_ext;
-    output reg [4:0] rd_out_id, inst_read_reg_addr2_out_id;
+    output reg [4:0] rd_out_id, inst_read_reg_addr2_out_id, inst_read_reg_addr1_out_id;
     output reg stall_flag_if_out, stall_flag_ex_out, stall_flag_id_out, jump_out_id;
     // computing multiplexer results
     wire [4:0] reg_wr_addr; // Changed reg to wire due to error in line 37
@@ -98,7 +99,8 @@ module instruction_decoder (
         begin
             jump_out_id <= jump_in;
             rd_out_id <= rd;
-            inst_read_reg_addr2_out_id <=  inst_read_reg_addr2;
+            inst_read_reg_addr2_out_id <= inst_read_reg_addr2;
+            inst_read_reg_addr1_out_id <= inst_read_reg_addr1;
             if(registers_flag[inst_read_reg_addr1]==1 || registers_flag[inst_read_reg_addr2]==1)
             begin
                     stall_flag_if_out <= 1'b1;

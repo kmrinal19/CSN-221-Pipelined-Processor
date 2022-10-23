@@ -26,7 +26,7 @@ module pipeline();
     wire [31:0] currpc_out;
     wire [31:0] out_instn;
     wire [5:0] opcode;
-    wire [4:0] inst_read_reg_addr2_out_id, rd, rd_out_id, rd_in_id_ex, rd_out_id_ex, rd_out_ex, rd_in_ex_dm, rd_out_ex_dm, rd_in_dm_wb, rd_out_dm_wb, rd_in_wb, rd_out_wb, inst_read_reg_addr2_out_id_ex;
+    wire [4:0] inst_read_reg_addr1_out_id, inst_read_reg_addr2_out_id, rd, rd_out_id, rd_in_id_ex, rd_out_id_ex, rd_out_ex, rd_in_ex_dm, rd_out_ex_dm, rd_in_dm_wb, rd_out_dm_wb, rd_in_wb, rd_out_wb, inst_read_reg_addr2_out_id_ex, inst_read_reg_addr1_out_id_ex;
     wire [15:0] inst_imm_field;
     wire [1:0] alu_op;
     wire [1:0] alu_op_out_id_ex;
@@ -121,6 +121,7 @@ module pipeline();
         .sgn_ext_imm(sgn_ext_imm),
         .imm_sgn_ext_lft_shft(imm_sgn_ext_lft_shft),
         .reg_write_cu(reg_write),
+        .inst_read_reg_addr1_out_id(inst_read_reg_addr1_out_id),
         .inst_read_reg_addr2_out_id(inst_read_reg_addr2_out_id),
         .rd_out_id(rd_out_id),
         .jump_in(jump_id),
@@ -155,9 +156,40 @@ module pipeline();
         // .clk(clk),
         // .reset(reset),
         // .rd_out_id_ex(rd_out_id_ex)
-
-        branch, reg_write, mem_to_reg, mem_write, mem_read, alu_src, alu_op, nextpc ,reg_file_rd_data1,reg_file_rd_data2, sgn_ext_imm, inst_imm_field, nextpc_out, reg_file_out_data1, reg_file_out_data2
-        , sgn_ext_imm_out, reg_write_out_id_ex, mem_to_reg_out_id_ex, mem_write_out_id_ex, mem_read_out_id_ex, branch_out_id_ex, alu_src_out_id_ex, alu_op_out_id_ex, clk, reset, reg_dst, reg_dst_id_ex, inst_read_reg_addr2_out_id, rd_out_id, inst_read_reg_addr2_out_id_ex, rd_out_id_ex, jump_out_id
+        branch,
+        reg_write,
+        mem_to_reg,
+        mem_write,
+        mem_read,
+        alu_src,
+        alu_op,
+        nextpc,
+        reg_file_rd_data1,
+        reg_file_rd_data2,
+        sgn_ext_imm,
+        inst_imm_field,
+        nextpc_out,
+        reg_file_out_data1,
+        reg_file_out_data2,
+        sgn_ext_imm_out,
+        reg_write_out_id_ex,
+        mem_to_reg_out_id_ex,
+        mem_write_out_id_ex,
+        mem_read_out_id_ex,
+        branch_out_id_ex,
+        alu_src_out_id_ex,
+        alu_op_out_id_ex,
+        clk,
+        reset,
+        reg_dst,
+        reg_dst_id_ex,
+        inst_read_reg_addr2_out_id,
+        rd_out_id,
+        inst_read_reg_addr2_out_id_ex,
+        rd_out_id_ex,
+        jump_out_id,
+        inst_read_reg_addr1_out_id,
+        inst_read_reg_addr1_out_id_ex
     );
 
     // EX Ex (
@@ -184,10 +216,13 @@ module pipeline();
         .reset (reset),
         .branch (branch_out_id_ex),
         .reg_dst(reg_dst_id_ex),
+        .inst_read_reg_addr1_out_id_ex(inst_read_reg_addr1_out_id_ex),
         .inst_read_reg_addr2(inst_read_reg_addr2_out_id_ex),
+        .rd_out_dm_wb(rd_out_dm_wb),
         .rd(rd_out_id_ex),
         .rs (reg_file_out_data1),
         .rt (reg_file_out_data2),
+        .rd_out_ex_dm(rd_out_ex_dm),
         .sign_ext (sgn_ext_imm_out),
         .ALUSrc (alu_src_out_id_ex),
         .ALUOp (alu_op_out_id_ex),
@@ -196,20 +231,21 @@ module pipeline();
         .address(branch_address),
         .zero (zero),
         .resultOut(resultOut),
-        .pcout (pcout), // redundant
+        .pcout (pcout),
         .rd_out(rd_out_ex),
         .branch_out_ex_dm(branch_out_ex_dm), // input
         //control signals
         .mem_read_in_ex(mem_read_out_id_ex),
         .mem_write_in_ex(mem_write_out_id_ex),
         .reg_write_in_ex(reg_write_out_id_ex),
+        .reg_write_out_ex_dm(reg_write_out_ex_dm),
+        .reg_write_out_dm_wb(reg_write_out_dm_wb),
         .mem_to_reg_in_ex(mem_to_reg_out_id_ex),
         .mem_read_out_ex(mem_read_out_ex),
         .mem_write_out_ex(mem_write_out_ex),
         .reg_write_out_ex(reg_write_out_ex),
         .mem_to_reg_out_ex(mem_to_reg_out_ex),
         .branch_out(branch_out_ex)
-
     );
 
     EX_DM_register EX_DM (

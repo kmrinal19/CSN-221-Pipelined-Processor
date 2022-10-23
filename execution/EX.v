@@ -1,17 +1,18 @@
-module EX(stall_flag, clk, rs, rt, sign_ext, ALUSrc, ALUOp, branch, reset, reg_dst, inst_read_reg_addr2, rd, pc, zero, address, resultOut, pcout, branch_out, offset,rd_out, branch_out_ex_dm, mem_read_in_ex, mem_write_in_ex, reg_write_in_ex, mem_to_reg_in_ex, mem_read_out_ex, mem_write_out_ex, reg_write_out_ex, mem_to_reg_out_ex);
+module EX(stall_flag, clk, rs, rt, rd_out_ex_dm, sign_ext, ALUSrc, ALUOp, branch, reset, reg_dst, inst_read_reg_addr1_out_id_ex, inst_read_reg_addr2, rd_out_dm_wb, rd, pc, zero, address, resultOut, pcout, branch_out, offset,rd_out, branch_out_ex_dm, mem_read_in_ex, mem_write_in_ex, reg_write_in_ex, reg_write_out_ex_dm, reg_write_out_dm_wb, mem_to_reg_in_ex, mem_read_out_ex, mem_write_out_ex, reg_write_out_ex, mem_to_reg_out_ex);
 
     input stall_flag;
     input reset;        //To start from a known state - not necessary
     input clk, reg_dst, branch_out_ex_dm;
-    input mem_read_in_ex, mem_write_in_ex, reg_write_in_ex, mem_to_reg_in_ex;
+    input mem_read_in_ex, mem_write_in_ex, reg_write_in_ex, mem_to_reg_in_ex, reg_write_out_ex_dm, reg_write_out_dm_wb;
     input wire [31:0] pc;
     input wire branch;
     input wire [31:0] rs;
     input wire [31:0] rt;
     input wire [31:0] sign_ext;
+    input wire [4:0] rd_out_ex_dm, rd_out_dm_wb;
     input wire ALUSrc;          //to choose bw rt and sign extend ,from cu
     input wire [1:0] ALUOp;     //from cu
-    input wire [4:0] inst_read_reg_addr2, rd;
+    input wire [4:0] inst_read_reg_addr2, rd, inst_read_reg_addr1_out_id_ex;
     wire [5:0] funct;     //from decode unit
     reg [3:0] ALUControl;
     reg [31:0] result;
@@ -29,6 +30,7 @@ module EX(stall_flag, clk, rs, rt, sign_ext, ALUSrc, ALUOp, branch, reset, reg_d
     output reg [31:0] offset;
     // wire [31:0] neg_data2 = -data2;
     reg [31:0] data2;
+    reg [2:0] forward_a, forward_b;
     // pcout = pc;
 
     // always @(posedge clk)
