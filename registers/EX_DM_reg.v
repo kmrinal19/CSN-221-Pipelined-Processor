@@ -23,7 +23,6 @@ always @(negedge clk)
             branch_out_ex_dm = 1;
             mem_read_out_ex_dm <= 0;
             mem_write_out_ex_dm <= 0;
-            // Mem_address <= ALU_result;
             mem_to_reg_out_ex_dm <= 0;
             reg_write_out_ex_dm <= 0;
         end
@@ -33,13 +32,10 @@ always @(negedge clk)
             rd_out_ex_dm <= rd_in_ex_dm;
             mem_read_out_ex_dm <= mem_read_in;
             mem_write_out_ex_dm <= mem_write_in;
-            // Mem_address <= ALU_result;
             Write_data_out <= Write_data_in;
             mem_to_reg_out_ex_dm <= mem_to_reg_in;
             reg_write_out_ex_dm <= reg_write_in;
             branch_out_ex_dm <= 0;
         end
-        // #1
-        // $display("time=%3d, check address= %d \n",$time,rd_in_ex_dm);
     end
 endmodule

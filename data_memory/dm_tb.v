@@ -19,36 +19,29 @@ module dm_test_bench;
     .Write_data(Write_data),
     .Read_Data(Read_Data)
   );
-  
-  initial 
+
+  initial
     begin
       clk = 1'b0;
       forever #1 clk = ~clk;
     end
-  
-  initial 
+
+  initial
     begin
         reset = 1'b1;
         #100 reset = 1'b0;
     end
 
-  initial 
+  initial
     begin
       Mem_read = 1'b0;
       Mem_write = 1'b1;
       Mem_address = 0;
       Write_data = 20;
-      #20
-      $display ("time=%3d, Mem_read=%b, Mem_write=%b, Mem_address=%b, Write_data=%b, Read_Data=%b \n", $time,Mem_read,Mem_write,Mem_address,Write_data, Read_Data);
-      
-      #10
       Mem_read = 1'b1;
       Mem_write = 1'b0;
       Mem_address = 0;
       Write_data = 30;
-      #20
-      $display ("time=%3d, Mem_read=%b, Mem_write=%b, Mem_address=%b, Write_data=%b, Read_Data=%b \n", $time,Mem_read,Mem_write,Mem_address,Write_data, Read_Data);
-      
       $finish;
     end
 

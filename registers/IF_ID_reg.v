@@ -20,7 +20,6 @@ module IF_ID_reg(currpc, nextpc ,inp_instn ,out_instn ,clk ,PCplus4Out, currpc_o
       currpc_out <= currpc;
       out_instn = inp_instn;
       jump_out <= jump_in;
-      $display("time = %3d IF ID: Ouput inst: %b jump_address: %b", $time, out_instn, jump_address);
     end
 
 endmodule
