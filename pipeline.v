@@ -15,6 +15,7 @@
 module pipeline();
     wire flag_if, flag_id, flag_ex;
     reg clk, reset;
+    wire [31:0] counter_output, branch_counter_output, jump_counter_output;
     wire mem_to_reg_out_ex_dm;
     // reg [31:0] registers[0:31];
     wire [31:0] pc;
@@ -48,7 +49,10 @@ module pipeline();
         .jump_in_im(jump_id),
         .jump_address_im(jump_address),
         .pcout_ex(pcout),
-        .branch_out_ex(branch_out_ex)
+        .branch_out_ex(branch_out_ex),
+        .counter(counter_output),
+        .jump_counter(jump_counter_output),
+        .branch_counter(branch_counter_output)
     );
 
     // assign opcode = inp_instn[31:26]; // changes to be made in controlunit.v
@@ -85,7 +89,11 @@ module pipeline();
         .alu_src(alu_src),
         .reg_write(reg_write),
         .jump(jump),
-        .clk(clk)
+        .clk(clk),
+        .counter(counter_output),
+        .jump_counter(jump_counter_output),
+        .counter_output(counter_output),
+        .jump_counter_output(jump_counter_output)
         );
 
     wire [31:0] reg_wr_data;
@@ -189,7 +197,10 @@ module pipeline();
         rd_out_id_ex,
         jump_out_id,
         inst_read_reg_addr1_out_id,
-        inst_read_reg_addr1_out_id_ex
+        inst_read_reg_addr1_out_id_ex,
+        rd_out_wb,
+        reg_write_out_wb,
+        reg_wr_data
     );
 
     // EX Ex (
@@ -233,6 +244,8 @@ module pipeline();
         .resultOut(resultOut),
         .pcout (pcout),
         .rd_out(rd_out_ex),
+        .result_out_ex_dm(ALU_result_out_ex_dm),
+        .result_out_dm_wb(alu_res_out_wb),
         .branch_out_ex_dm(branch_out_ex_dm), // input
         //control signals
         .mem_read_in_ex(mem_read_out_id_ex),
@@ -245,7 +258,9 @@ module pipeline();
         .mem_write_out_ex(mem_write_out_ex),
         .reg_write_out_ex(reg_write_out_ex),
         .mem_to_reg_out_ex(mem_to_reg_out_ex),
-        .branch_out(branch_out_ex)
+        .branch_out(branch_out_ex),
+        .branch_counter(branch_counter_output),
+        .branch_counter_output(branch_counter_output)
     );
 
     EX_DM_register EX_DM (

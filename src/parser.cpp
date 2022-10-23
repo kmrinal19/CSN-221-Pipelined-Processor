@@ -42,6 +42,7 @@ int main(int argc, char** argv){
 	for(Instruction* inst: program){
 		binary_file<<std::bitset<32>(inst->parse())<<std::endl;
 	}
+	binary_file<<std::bitset<32>(4294967295);
 
 	instruction_file.close();
 	binary_file.close();

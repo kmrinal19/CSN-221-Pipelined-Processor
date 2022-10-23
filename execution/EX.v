@@ -1,13 +1,13 @@
-module EX(stall_flag, clk, rs, rt, rd_out_ex_dm, sign_ext, ALUSrc, ALUOp, branch, reset, reg_dst, inst_read_reg_addr1_out_id_ex, inst_read_reg_addr2, rd_out_dm_wb, rd, pc, zero, address, resultOut, pcout, branch_out, offset,rd_out, branch_out_ex_dm, mem_read_in_ex, mem_write_in_ex, reg_write_in_ex, reg_write_out_ex_dm, reg_write_out_dm_wb, mem_to_reg_in_ex, mem_read_out_ex, mem_write_out_ex, reg_write_out_ex, mem_to_reg_out_ex);
+module EX(stall_flag, clk, rs, rt, rd_out_ex_dm, sign_ext, ALUSrc, ALUOp, branch, reset, reg_dst, inst_read_reg_addr1_out_id_ex, inst_read_reg_addr2, rd_out_dm_wb, rd, pc, zero, address, resultOut, pcout, branch_out, offset,rd_out, branch_out_ex_dm, mem_read_in_ex, mem_write_in_ex, reg_write_in_ex, reg_write_out_ex_dm, reg_write_out_dm_wb, mem_to_reg_in_ex, mem_read_out_ex, mem_write_out_ex, reg_write_out_ex, mem_to_reg_out_ex, result_out_dm_wb, result_out_ex_dm, branch_counter, branch_counter_output);
 
     input stall_flag;
     input reset;        //To start from a known state - not necessary
     input clk, reg_dst, branch_out_ex_dm;
     input mem_read_in_ex, mem_write_in_ex, reg_write_in_ex, mem_to_reg_in_ex, reg_write_out_ex_dm, reg_write_out_dm_wb;
-    input wire [31:0] pc;
+    input wire [31:0] pc, branch_counter;
     input wire branch;
     input wire [31:0] rs;
-    input wire [31:0] rt;
+    input wire [31:0] rt, result_out_dm_wb, result_out_ex_dm;
     input wire [31:0] sign_ext;
     input wire [4:0] rd_out_ex_dm, rd_out_dm_wb;
     input wire ALUSrc;          //to choose bw rt and sign extend ,from cu
@@ -18,19 +18,21 @@ module EX(stall_flag, clk, rs, rt, rd_out_ex_dm, sign_ext, ALUSrc, ALUOp, branch
     reg [31:0] result;
     output reg zero;
     output reg [31:0] address;
-    output reg [31:0] resultOut;
+    output reg [31:0] resultOut, branch_counter_output;
     output reg [31:0] pcout;
     output reg[4:0] rd_out;
     output reg branch_out;
     output reg mem_read_out_ex, mem_write_out_ex, reg_write_out_ex, mem_to_reg_out_ex;
     // output reg [3:0] ALUControlOut;
 
+    reg [31:0] t_branch_counter_output;
+
     // wire [3:0] ALUControl;
     // wire [31:0] result;
     output reg [31:0] offset;
     // wire [31:0] neg_data2 = -data2;
-    reg [31:0] data2;
-    reg [2:0] forward_a, forward_b;
+    reg [31:0] data1, data2;
+    reg [1:0] forward_a, forward_b;
     // pcout = pc;
 
     // always @(posedge clk)
@@ -59,6 +61,7 @@ module EX(stall_flag, clk, rs, rt, rd_out_ex_dm, sign_ext, ALUSrc, ALUOp, branch
 
     always @(posedge clk)
     begin
+        t_branch_counter_output <= branch_counter_output;
         if(branch_out_ex_dm==1)
         begin
             mem_read_out_ex <= 0;
@@ -69,11 +72,47 @@ module EX(stall_flag, clk, rs, rt, rd_out_ex_dm, sign_ext, ALUSrc, ALUOp, branch
         end
         else
         begin
+            forward_a = 2'b00;
+            forward_b = 2'b00;
+
+            // Data forwarding signals
+
+            $display("EXECUTION: reg_write_out_ex_dm: %b, rd_out_ex_dm: %b, inst_read_reg_addr1_out_id_ex:%b",reg_write_out_ex_dm,rd_out_ex_dm,inst_read_reg_addr1_out_id_ex);
+
+            // MEM hazard
+            if(reg_write_out_dm_wb == 1 && rd_out_dm_wb == inst_read_reg_addr1_out_id_ex)
+                forward_a = 2'b01;
+            if(reg_write_out_dm_wb == 1 && rd_out_dm_wb == inst_read_reg_addr2)
+                forward_b = 2'b01;
+
+            // EX hazard
+            if(reg_write_out_ex_dm == 1 && rd_out_ex_dm == inst_read_reg_addr1_out_id_ex)
+                forward_a = 2'b10;
+            if(reg_write_out_ex_dm == 1 && rd_out_ex_dm == inst_read_reg_addr2)
+                forward_b = 2'b10;
+
+            case(forward_a)
+
+                2'b00:
+                    data1 = rs;
+
+                2'b01:
+                    data1 = result_out_dm_wb;
+
+                2'b10:
+                    data1 = result_out_ex_dm;
+
+            endcase
+
+            $display("EXECUTION: forward_a: %b, data1: %d", forward_a, data1);
+
             mem_read_out_ex <= mem_read_in_ex;
             mem_write_out_ex <= mem_write_in_ex;
             reg_write_out_ex <= reg_write_in_ex;
             mem_to_reg_out_ex <= mem_to_reg_in_ex;
             // branch_out <= branch_out_ex_dm;
+
+            // MUX for selecting rd
             if (reg_dst==0)
                 rd_out = inst_read_reg_addr2;
             else
@@ -125,7 +164,22 @@ module EX(stall_flag, clk, rs, rt, rd_out_ex_dm, sign_ext, ALUSrc, ALUOp, branch
 
             endcase
 
-            if(rs == data2)
+            case(forward_b)
+
+                2'b00:
+                    data2 = data2;
+
+                2'b01:
+                    data2 = result_out_dm_wb;
+
+                2'b10:
+                    data2 = result_out_ex_dm;
+
+            endcase
+
+            $display("EXECUTION: forward_b: %b, data2: %d", forward_b, data2);
+
+            if(data1 == data2)
                 begin
                     zero = 1'b1;
                 end
@@ -136,19 +190,19 @@ module EX(stall_flag, clk, rs, rt, rd_out_ex_dm, sign_ext, ALUSrc, ALUOp, branch
 
                 4'b0000:
                     begin
-                    $display("EXECUTION UNIT: time = %3d, data1=%d, data2=%d \n", $time, rs, data2);
-                    result = rs + data2;
+                    $display("EXECUTION UNIT: time = %3d, data1=%d, data2=%d \n", $time, data1, data2);
+                    result = data1 + data2;
                     end
 
 
                 4'b0001:
                     begin
-                    result = rs - data2;
+                    result = data1 - data2;
                     end
 
                 4'b0010:
                     begin
-                    result = rs * data2;
+                    result = data1 * data2;
                     end
 
             endcase
@@ -160,6 +214,7 @@ module EX(stall_flag, clk, rs, rt, rd_out_ex_dm, sign_ext, ALUSrc, ALUOp, branch
 
             if (branch==1 && zero==1)
             begin
+                branch_counter_output <= t_branch_counter_output + 1;
                 offset = sign_ext;
                 address = offset;
                 pcout = address;
@@ -174,6 +229,10 @@ module EX(stall_flag, clk, rs, rt, rd_out_ex_dm, sign_ext, ALUSrc, ALUOp, branch
         end
     end
 
-    always @(posedge reset) zero = 1'b0;
+    always @(posedge reset)
+    begin
+        zero = 1'b0;
+        branch_counter_output <= 0;
+    end
 
 endmodule

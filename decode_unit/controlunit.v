@@ -1,9 +1,12 @@
-module ControlUnit (opcode, branch_out_ex_dm ,reg_dst,branch,mem_read,mem_to_reg,alu_op,mem_write,alu_src,reg_write, jump, reset, clk);
+module ControlUnit (opcode, branch_out_ex_dm ,reg_dst,branch,mem_read,mem_to_reg,alu_op,mem_write,alu_src,reg_write, jump, reset, clk, counter, jump_counter, counter_output, jump_counter_output);
 
   input [5:0] opcode;
+  input [31:0] jump_counter, counter;
   input reset, clk, branch_out_ex_dm;
   output reg reg_dst,branch,mem_read,mem_to_reg,mem_write,alu_src,reg_write, jump;
   output reg [1:0] alu_op;
+  output reg [31:0] jump_counter_output, counter_output;
+  reg [31:0] t_jump_counter_output, t_counter_output;
 
   parameter RType=6'b000000;
   parameter LW=6'b000001;
@@ -23,10 +26,14 @@ module ControlUnit (opcode, branch_out_ex_dm ,reg_dst,branch,mem_read,mem_to_reg
    alu_src <= 1'b0;
    reg_write <= 1'b0;
    jump <= 0;
+   jump_counter_output <= 0;
+   counter_output <= 0;
   end
 
   always@(posedge clk)
   begin
+    t_counter_output <= counter;
+    t_jump_counter_output <= jump_counter;
     if(branch_out_ex_dm==1)
     begin
       reg_dst<=0 ;
@@ -128,6 +135,13 @@ module ControlUnit (opcode, branch_out_ex_dm ,reg_dst,branch,mem_read,mem_to_reg
 
 	  endcase
     end
+  end
+
+  always@(negedge clk)
+  begin
+    counter_output <= t_counter_output+1;
+    if(opcode==JUMP)
+      jump_counter_output <= t_jump_counter_output+1;
   end
 
 
