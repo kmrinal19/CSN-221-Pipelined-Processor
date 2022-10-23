@@ -45,36 +45,56 @@ module RegisterFile(stall_flag, inst_read_reg_addr1, inst_read_reg_addr2, reg_wr
 			registers[30] <= 32'd0; registers_flag[30] <= 32'd0;
 			registers[31] <= 32'd0; registers_flag[31] <= 32'd0;
 		end
-	always @(inst_read_reg_addr1, inst_read_reg_addr2, posedge clk, stall_flag)
-	begin
-	if (stall_flag==0)
-	
-		begin
-			reg_file_rd_data1 <= registers[inst_read_reg_addr1];
-			reg_file_rd_data2 <= registers[inst_read_reg_addr2];
-		end
-	end
+	//always @(inst_read_reg_addr1, inst_read_reg_addr2, posedge clk, stall_flag)
+
+
+	reg[31:0] t_reg_file_rd_data1, t_reg_file_rd_data2, t_reg_wr_data;
+
+	// always @(posedge clk)
+	// 	begin
+	// 	$display("time = %3d, Register file: read reg 1 = %d, read reg 2 = %d, stall_flag = %d", $time, inst_read_reg_addr1, inst_read_reg_addr2, stall_flag);
+	// 	t_reg_wr_data <= reg_wr_data;
+	// 	if (stall_flag==0)
+	// 		// #1
+	// 		begin
+	// 			t_reg_file_rd_data1 <= registers[inst_read_reg_addr1];
+	// 			t_reg_file_rd_data1 <= registers[inst_read_reg_addr2];
+	// 		end
+	// 	end
 
     // always@(reg_wr_data, reg_wr_addr) $display("reg_wr_data =%d, reg_wr_addr=%d",reg_wr_data, reg_wr_addr);
 
-	always @(negedge clk)
+	always @(posedge clk)
 	// if (stall_flag==0)
 	// begin
 	// #8
-	#1
+	// #1
+		begin
+			// $display("time = %3d, Register file: read reg 1 = %d, read reg 2 = %d, stall_flag = %d", $time, inst_read_reg_addr1, inst_read_reg_addr2, stall_flag);
+			reg_file_rd_data1 = registers[inst_read_reg_addr1];
+			reg_file_rd_data2 = registers[inst_read_reg_addr2];
+			$display ("REGISTER FILE: time=%3d, register data1=%d, register data2=%d \n", $time, reg_file_rd_data1, reg_file_rd_data2);
+		end
+
+
+	always @ (posedge clk)
 		begin
 			if (reg_wr == 1)
 				begin
 					registers[reg_wr_addr] = reg_wr_data;
-					#1
-					$display ("time=%3d, ans=%b addr=%b data=%b \n", $time, registers[reg_wr_addr], reg_wr_addr,reg_wr_data);
+					$display ("REGISTER FILE: time=%3d, ans=%b addr=%b data=%b \n", $time, registers[reg_wr_addr], reg_wr_addr,reg_wr_data);
 				end
+				$display("REGISTER FILE: time: %3d", $time);
+			for(i=0; i<32; i=i+1)
+				$display("Register ", i , " ", registers[i]);
+
 		end
 	// end
-	always@(posedge clk)
-	begin
-		for(i=0; i<32; i=i+1)
-			$display("Register ", i , " ", registers[i]);
-	end
+	// always@(posedge clk)
+	// begin
+	// 	$display("REGISTER FILE: time: %3d", $time);
+	// 	for(i=0; i<32; i=i+1)
+	// 		$display("Register ", i , " ", registers[i]);
+	// end
 
 endmodule

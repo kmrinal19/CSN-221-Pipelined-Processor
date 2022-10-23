@@ -1,10 +1,10 @@
-module ControlUnit (opcode,reg_dst,branch,mem_read,mem_to_reg,alu_op,mem_write,alu_src,reg_write, reset);
-  
+module ControlUnit (opcode,reg_dst,branch,mem_read,mem_to_reg,alu_op,mem_write,alu_src,reg_write, reset, clk);
+
   input [5:0] opcode;
-  input reset;
+  input reset, clk;
   output reg reg_dst,branch,mem_read,mem_to_reg,mem_write,alu_src,reg_write;
   output reg [1:0] alu_op;
-  
+
   parameter RType=6'b000000;
   parameter LW=6'b000001;
   parameter SW=6'b000010;
@@ -23,11 +23,11 @@ module ControlUnit (opcode,reg_dst,branch,mem_read,mem_to_reg,alu_op,mem_write,a
    reg_write <= 1'b0;
   end
 
-  always@(opcode)
+  always@(posedge clk)
     begin
       case (opcode)
 
-        RType:           
+        RType:
 
           begin
           reg_dst<=1 ;
@@ -38,9 +38,9 @@ module ControlUnit (opcode,reg_dst,branch,mem_read,mem_to_reg,alu_op,mem_write,a
           alu_src<=0 ;
           reg_write<=1 ;
           alu_op<=2'b10;
-          end  
-        
-        LW:           
+          end
+
+        LW:
 
           begin
           reg_dst<=0 ;
@@ -52,9 +52,9 @@ module ControlUnit (opcode,reg_dst,branch,mem_read,mem_to_reg,alu_op,mem_write,a
           reg_write<=1 ;
           alu_op<=2'b00;
           end
-         
-        
-        SW:           
+
+
+        SW:
 
           begin
           //reg_dst<=1'bx ;
@@ -66,8 +66,8 @@ module ControlUnit (opcode,reg_dst,branch,mem_read,mem_to_reg,alu_op,mem_write,a
           reg_write<=0 ;
           alu_op<=2'b00;
           end
-          
-        BEQ:           
+
+        BEQ:
 
           begin
           //reg_dst<=1'bx ;
@@ -80,7 +80,7 @@ module ControlUnit (opcode,reg_dst,branch,mem_read,mem_to_reg,alu_op,mem_write,a
           alu_op<=2'b01;
           end
 
-	    ADDI:           
+	    ADDI:
 
           begin
           reg_dst<=0 ;
@@ -95,6 +95,6 @@ module ControlUnit (opcode,reg_dst,branch,mem_read,mem_to_reg,alu_op,mem_write,a
 
 	endcase
     end
-  
-  
+
+
 endmodule

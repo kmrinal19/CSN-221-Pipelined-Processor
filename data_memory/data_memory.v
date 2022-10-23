@@ -20,9 +20,8 @@ always @(posedge reset)
         memory[9] <= 32'd4;
     end
 
-always @(Mem_read) 
+always @(posedge clk)
 //   #10
-    #1
     begin
         if(Mem_read==1)
             Read_Data <= memory[Mem_address];
@@ -30,10 +29,10 @@ always @(Mem_read)
 
 always @(negedge clk)
 //   #10
-    #1
+// #1
     begin
         if(Mem_write==1)
             memory[Mem_address] <= Write_data;
     end
-    
+
 endmodule

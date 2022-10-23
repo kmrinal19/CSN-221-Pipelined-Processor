@@ -1,11 +1,11 @@
-module SignExtend(stall_flag, inp ,out);
+module SignExtend(clk, stall_flag, inp ,out);
 
-input stall_flag;
+input clk, stall_flag;
 input  [15:0] inp;
 output reg [31:0] out;
 
 
-always @(inp or stall_flag)
+always @(posedge clk)
 if (stall_flag==0)
 begin
 begin
