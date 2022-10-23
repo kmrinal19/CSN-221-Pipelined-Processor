@@ -12,7 +12,7 @@
 #define J 5
 
 #define ADD 0
-#define MUL 1
+#define MUL 2
 
 const std::unordered_map<std::string, unsigned short> OPCODE_MAP = {
     {"ADD", R_TYPE},
@@ -59,7 +59,7 @@ class IInstruction: public Instruction {
     private:
         unsigned short rs;
         unsigned short rt;
-        unsigned short address;
+        std::string address;
 };
 
 class UJInstruction: public Instruction {
@@ -67,7 +67,7 @@ class UJInstruction: public Instruction {
         UJInstruction(short opcode_type, std::vector<std::string> operands);
         unsigned int parse();
     private:
-    //changed short to int 
+    //changed short to int
         unsigned int address;
 };
 

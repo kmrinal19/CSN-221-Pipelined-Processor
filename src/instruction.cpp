@@ -5,6 +5,8 @@
 #include "utils.h"
 #include "instruction.h"
 
+#include <iostream>
+
 Instruction::Instruction(unsigned short instruction_opcode) : instruction_opcode(instruction_opcode) {}
 
 unsigned short Instruction::get_instruction_opcode()
@@ -73,16 +75,23 @@ IInstruction::IInstruction(short opcode_type, std::vector<std::string> operands)
 	{
 		rs = parse_register_string(operands[1]);
 		rt = parse_register_string(operands[0]);
-		address = (unsigned short)stoi(operands[2]);
+		address = operands[2];
 	}
 }
 
 unsigned int IInstruction::parse()
 {
 	// TODO: Handle errors for instruction params
+	unsigned short address_int;
+	if(get_instruction_opcode()==BEQ){
+			address_int = (unsigned short)LABEL_MAP[address];
+		}
+		else{
+			address_int = (unsigned short)stoi(address);
+	}
 	unsigned int instruction(0);
 	unsigned int opcode(get_instruction_opcode());
-	instruction = ((opcode << 5 | this->rs) << 5 | this->rt) << 16 | this->address;
+	instruction = ((opcode << 5 | this->rs) << 5 | this->rt) << 16 | address_int;
 	return instruction;
 }
 

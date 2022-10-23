@@ -20,7 +20,7 @@ module pipeline();
     wire [31:0] pc;
     reg [31:0] Imemory [0:1023];
     wire [31:0] inp_instn;
-    wire [31:0] nextpc;
+    wire [31:0] nextpc, pcout_ex_dm;
     wire [31:0] pc_to_branch;
     wire [31:0] PCplus4Out;
     wire [31:0] currpc_out;
@@ -33,8 +33,9 @@ module pipeline();
     // wire [5:0] funct;
     wire [31:0] branch_address;
     wire [31:0] pcout, resultOut, Mem_address, Write_data;
-    wire Mem_read, Mem_write, mem_to_reg_out_dm_wb;
+    wire Mem_read, Mem_write, mem_to_reg_out_dm_wb, jump;
     wire [31:0] Read_Data, read_data_out_wb, alu_res_out_wb, ALU_result_out_ex_dm;
+    wire [25:0] jump_address;
 
     Instruction_Memory IM (
         .stall_flag(flag_if),
@@ -43,7 +44,11 @@ module pipeline();
       	.reset(reset),
         .inp_instn(inp_instn),
         .nextpc(nextpc),
-        .pc_to_branch(pc_to_branch)
+        .pc_to_branch(pc_to_branch),
+        .jump_in_im(jump_id),
+        .jump_address_im(jump_address),
+        .pcout_ex(pcout),
+        .branch_out_ex(branch_out_ex)
     );
 
     // assign opcode = inp_instn[31:26]; // changes to be made in controlunit.v
@@ -60,12 +65,16 @@ module pipeline();
         .nextpc(nextpc),
         .PCplus4Out(PCplus4Out),
         .currpc_out(currpc_out),
-        .out_instn(out_instn)
+        .out_instn(out_instn),
+        .jump_address(jump_address),
+        .jump_in(jump),
+        .jump_out(jump_id)
     );
 
 
     ControlUnit cu (
         .opcode(out_instn[31:26]),
+        .branch_out_ex_dm(branch_out_ex_dm),
         .reset(reset),
         .reg_dst(reg_dst),
         .branch(branch),
@@ -75,6 +84,7 @@ module pipeline();
         .mem_write(mem_write),
         .alu_src(alu_src),
         .reg_write(reg_write),
+        .jump(jump),
         .clk(clk)
         );
 
@@ -112,7 +122,9 @@ module pipeline();
         .imm_sgn_ext_lft_shft(imm_sgn_ext_lft_shft),
         .reg_write_cu(reg_write),
         .inst_read_reg_addr2_out_id(inst_read_reg_addr2_out_id),
-        .rd_out_id(rd_out_id)
+        .rd_out_id(rd_out_id),
+        .jump_in(jump_id),
+        .jump_out_id(jump_out_id)
     );
 
     ID_EX_reg ID_EX (
@@ -145,7 +157,7 @@ module pipeline();
         // .rd_out_id_ex(rd_out_id_ex)
 
         branch, reg_write, mem_to_reg, mem_write, mem_read, alu_src, alu_op, nextpc ,reg_file_rd_data1,reg_file_rd_data2, sgn_ext_imm, inst_imm_field, nextpc_out, reg_file_out_data1, reg_file_out_data2
-        , sgn_ext_imm_out, reg_write_out_id_ex, mem_to_reg_out_id_ex, mem_write_out_id_ex, mem_read_out_id_ex, branch_out_id_ex, alu_src_out_id_ex, alu_op_out_id_ex, clk, reset, reg_dst, reg_dst_id_ex, inst_read_reg_addr2_out_id, rd_out_id, inst_read_reg_addr2_out_id_ex, rd_out_id_ex
+        , sgn_ext_imm_out, reg_write_out_id_ex, mem_to_reg_out_id_ex, mem_write_out_id_ex, mem_read_out_id_ex, branch_out_id_ex, alu_src_out_id_ex, alu_op_out_id_ex, clk, reset, reg_dst, reg_dst_id_ex, inst_read_reg_addr2_out_id, rd_out_id, inst_read_reg_addr2_out_id_ex, rd_out_id_ex, jump_out_id
     );
 
     // EX Ex (
@@ -185,17 +197,29 @@ module pipeline();
         .zero (zero),
         .resultOut(resultOut),
         .pcout (pcout), // redundant
-        .rd_out(rd_out_ex)
+        .rd_out(rd_out_ex),
+        .branch_out_ex_dm(branch_out_ex_dm), // input
+        //control signals
+        .mem_read_in_ex(mem_read_out_id_ex),
+        .mem_write_in_ex(mem_write_out_id_ex),
+        .reg_write_in_ex(reg_write_out_id_ex),
+        .mem_to_reg_in_ex(mem_to_reg_out_id_ex),
+        .mem_read_out_ex(mem_read_out_ex),
+        .mem_write_out_ex(mem_write_out_ex),
+        .reg_write_out_ex(reg_write_out_ex),
+        .mem_to_reg_out_ex(mem_to_reg_out_ex),
+        .branch_out(branch_out_ex)
+
     );
 
     EX_DM_register EX_DM (
         .ALU_result (resultOut),
         .ALU_result_out_ex_dm(ALU_result_out_ex_dm),
-        .mem_to_reg_in(mem_to_reg_out_id_ex),
+        .mem_to_reg_in(mem_to_reg_out_ex),
         .mem_to_reg_out_ex_dm(mem_to_reg_out_ex_dm),
-        .mem_read_in (mem_read_out_id_ex),
-        .mem_write_in(mem_write_out_id_ex),
-        .reg_write_in(reg_write_out_id_ex),
+        .mem_read_in (mem_read_out_ex),
+        .mem_write_in(mem_write_out_ex),
+        .reg_write_in(reg_write_out_ex),
         .Write_data_in(reg_file_out_data2),
         // .Mem_address(Mem_address),
         .mem_read_out_ex_dm(mem_read_out_ex_dm),
@@ -205,7 +229,11 @@ module pipeline();
         .clk(clk),
         .reset(reset),
         .rd_in_ex_dm(rd_out_ex),
-        .rd_out_ex_dm(rd_out_ex_dm)
+        .rd_out_ex_dm(rd_out_ex_dm),
+        .branch_out_ex(branch_out_ex),
+        .branch_out_ex_dm(branch_out_ex_dm),
+        .pcout_ex(pcout),
+        .pcout_ex_dm(pcout_ex_dm)
     );
 
     DataMemory DM (
@@ -254,9 +282,10 @@ module pipeline();
     initial
     begin
     $monitor("MONTIOR: time=%3d, reg_wr_data=%d \n", $time, reg_wr_data);
-    reset = 1;
     #100
     clk = 0;
+    #50
+    reset = 1;
     // #500
     // reset <= 0;
     end

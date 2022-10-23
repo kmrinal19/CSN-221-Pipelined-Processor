@@ -1,8 +1,8 @@
-module ControlUnit (opcode,reg_dst,branch,mem_read,mem_to_reg,alu_op,mem_write,alu_src,reg_write, reset, clk);
+module ControlUnit (opcode, branch_out_ex_dm ,reg_dst,branch,mem_read,mem_to_reg,alu_op,mem_write,alu_src,reg_write, jump, reset, clk);
 
   input [5:0] opcode;
-  input reset, clk;
-  output reg reg_dst,branch,mem_read,mem_to_reg,mem_write,alu_src,reg_write;
+  input reset, clk, branch_out_ex_dm;
+  output reg reg_dst,branch,mem_read,mem_to_reg,mem_write,alu_src,reg_write, jump;
   output reg [1:0] alu_op;
 
   parameter RType=6'b000000;
@@ -10,6 +10,7 @@ module ControlUnit (opcode,reg_dst,branch,mem_read,mem_to_reg,alu_op,mem_write,a
   parameter SW=6'b000010;
   parameter BEQ=6'b000011;
   parameter ADDI = 6'b000100; //aluop same as sw and lw
+  parameter JUMP = 6'b000101;
 
   always @(posedge reset)
   begin
@@ -21,12 +22,26 @@ module ControlUnit (opcode,reg_dst,branch,mem_read,mem_to_reg,alu_op,mem_write,a
    mem_write <= 1'b0;
    alu_src <= 1'b0;
    reg_write <= 1'b0;
+   jump <= 0;
   end
 
   always@(posedge clk)
+  begin
+    if(branch_out_ex_dm==1)
+    begin
+      reg_dst<=0 ;
+      branch<=0 ;
+      mem_read<=0 ;
+      mem_to_reg<=0 ;
+      mem_write<=0 ;
+      alu_src<=0 ;
+      reg_write<=0 ;
+      alu_op<=2'b10;
+      jump <= 0;
+    end
+    else
     begin
       case (opcode)
-
         RType:
 
           begin
@@ -38,6 +53,7 @@ module ControlUnit (opcode,reg_dst,branch,mem_read,mem_to_reg,alu_op,mem_write,a
           alu_src<=0 ;
           reg_write<=1 ;
           alu_op<=2'b10;
+          jump <= 0;
           end
 
         LW:
@@ -51,6 +67,7 @@ module ControlUnit (opcode,reg_dst,branch,mem_read,mem_to_reg,alu_op,mem_write,a
           alu_src<=1 ;
           reg_write<=1 ;
           alu_op<=2'b00;
+          jump <= 0;
           end
 
 
@@ -65,6 +82,7 @@ module ControlUnit (opcode,reg_dst,branch,mem_read,mem_to_reg,alu_op,mem_write,a
           alu_src<=1 ;
           reg_write<=0 ;
           alu_op<=2'b00;
+          jump <= 0;
           end
 
         BEQ:
@@ -78,6 +96,7 @@ module ControlUnit (opcode,reg_dst,branch,mem_read,mem_to_reg,alu_op,mem_write,a
           alu_src<=0 ;
           reg_write<=0 ;
           alu_op<=2'b01;
+          jump <= 0;
           end
 
 	    ADDI:
@@ -91,10 +110,25 @@ module ControlUnit (opcode,reg_dst,branch,mem_read,mem_to_reg,alu_op,mem_write,a
           alu_src<=1 ;
           reg_write<=1 ;
           alu_op<=2'b00;
+          jump <= 0;
           end
 
-	endcase
+        JUMP:
+          begin
+            reg_dst<=0 ;
+            branch<=0 ;
+            mem_read<=0 ;
+            mem_to_reg<=0 ;
+            mem_write<=0 ;
+            alu_src<=0 ;
+            reg_write<=0 ;
+            alu_op<=2'b00;
+            jump<=1;
+          end
+
+	  endcase
     end
+  end
 
 
 endmodule
