@@ -127,7 +127,6 @@ module EX(stall_flag, clk, rs, rt, rd_out_ex_dm, sign_ext, ALUSrc, ALUOp, branch
 
             if(rs == data2)
                 begin
-                    $display("\n\nzero ho gaya mc\n\n");
                     zero = 1'b1;
                 end
             else

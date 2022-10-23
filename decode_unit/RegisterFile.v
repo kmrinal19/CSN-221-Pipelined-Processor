@@ -78,17 +78,22 @@ module RegisterFile(stall_flag, inst_read_reg_addr1, inst_read_reg_addr2, reg_wr
 
 
 	always @ (posedge clk)
-		begin
-			if (reg_wr == 1)
-				begin
-					registers[reg_wr_addr] = reg_wr_data;
-					$display ("REGISTER FILE: time=%3d, ans=%b addr=%b data=%b \n", $time, registers[reg_wr_addr], reg_wr_addr,reg_wr_data);
-				end
-				$display("REGISTER FILE: time: %3d", $time);
-			for(i=0; i<32; i=i+1)
-				$display("Register ", i , " ", registers[i]);
+	begin
+		$display("REGISTER FILE: time: %3d", $time);
+		for(i=0; i<32; i=i+1)
+			$display("Register ", i , " ", registers[i]);
 
+	end
+
+	always @ (negedge clk)
+	begin
+		if (reg_wr == 1)
+		begin
+			registers[reg_wr_addr] = reg_wr_data;
+			$display ("REGISTER FILE: time=%3d, ans=%b addr=%b data=%b \n", $time, registers[reg_wr_addr], reg_wr_addr,reg_wr_data);
 		end
+	end
+
 	// end
 	// always@(posedge clk)
 	// begin

@@ -15,21 +15,21 @@ reg[31:0] t_wb_data;
 always @(posedge clk)
     begin
         $display("Writeback rd_in", rd_in_wb);
-        t_rd_out_wb <= rd_in_wb;
-        t_reg_write_out_wb <= reg_write;
+        rd_out_wb <= rd_in_wb;
+        reg_write_out_wb <= reg_write;
         if (mem_to_reg==1)
-            t_wb_data <= dm_data_out;
+            wb_data <= dm_data_out;
         else
-            t_wb_data <= alu_data_out;
+            wb_data <= alu_data_out;
     end
 
-always @(negedge clk)
-    begin
-        rd_out_wb = t_rd_out_wb;
-        reg_write_out_wb = t_reg_write_out_wb;
-        wb_data = t_wb_data;
-        $display("Writeback ", rd_out_wb, " ", wb_data);
-    end
+// always @(negedge clk)
+//     begin
+//         rd_out_wb = t_rd_out_wb;
+//         reg_write_out_wb = t_reg_write_out_wb;
+//         wb_data = t_wb_data;
+//         $display("Writeback ", rd_out_wb, " ", wb_data);
+//     end
 
 // always@(posedge clk)
 //     $display("Writeback ", rd_out_wb, " ", wb_data);
